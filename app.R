@@ -38,8 +38,8 @@ server <- function(input, output) {
       geom_point()
     
     # if at least one facet column/row is specified, add it
-    facets <- paste(input$facet_row, '~', input$facet_col)
-    if (facets != '. ~ .') p <- p + facet_grid(facets)
+    # facets <- paste(input$facet_row, '~', input$facet_col)
+    # if (facets != '. ~ .') p <- p + facet_grid(facets)
     
     ggplotly(p) %>% 
       layout(height = input$plotHeight, autosize=TRUE)
