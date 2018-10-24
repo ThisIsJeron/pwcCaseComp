@@ -1,50 +1,51 @@
-#
-# This is a Shiny web application. You can run the application by clicking
-# the 'Run App' button above.
-#
-# Find out more about building applications with Shiny here:
-#
-#    http://shiny.rstudio.com/
-#
-
 library(shiny)
+library(plotly)
 
-# Define UI for application that draws a histogram
+data(diamonds, package = "ggplot2")
+nms <- names(diamonds)
+
 ui <- fluidPage(
-   
-   # Application title
-   titlePanel("Old Faithful Geyser Data"),
-   
-   # Sidebar with a slider input for number of bins 
-   sidebarLayout(
-      sidebarPanel(
-         sliderInput("bins",
-                     "Number of bins:",
-                     min = 1,
-                     max = 50,
-                     value = 30)
-      ),
-      
-      # Show a plot of the generated distribution
-      mainPanel(
-         plotOutput("distPlot")
-      )
-   )
+  
+  headerPanel("Fleetwings Quality of Life Data Visualization"),
+  sidebarPanel(
+    sliderInput('sampleSize', 'Sample Size', min = 1, max = nrow(diamonds),
+                value = 1000, step = 500, round = 0),
+    selectInput('x', 'X', choices = nms, selected = "carat"),
+    selectInput('y', 'Y', choices = nms, selected = "price"),
+    selectInput('color', 'Color', choices = nms, selected = "clarity"),
+    
+    selectInput('facet_row', 'Facet Row', c(None = '.', nms), selected = "clarity"),
+    selectInput('facet_col', 'Facet Column', c(None = '.', nms)),
+    sliderInput('plotHeight', 'Height of plot (in pixels)', 
+                min = 100, max = 2000, value = 1000)
+  ),
+  mainPanel(
+    plotlyOutput('trendPlot', height = "900px")
+  )
 )
 
-# Define server logic required to draw a histogram
 server <- function(input, output) {
-   
-   output$distPlot <- renderPlot({
-      # generate bins based on input$bins from ui.R
-      x    <- faithful[, 2] 
-      bins <- seq(min(x), max(x), length.out = input$bins + 1)
-      
-      # draw the histogram with the specified number of bins
-      hist(x, breaks = bins, col = 'darkgray', border = 'white')
-   })
+  
+  #add reactive data information. Dataset = built in diamonds data
+  dataset <- reactive({
+    diamonds[sample(nrow(diamonds), input$sampleSize),]
+  })
+  
+  output$trendPlot <- renderPlotly({
+    
+    # build graph with ggplot syntax
+    p <- ggplot(dataset(), aes_string(x = input$x, y = input$y, color = input$color)) + 
+      geom_point()
+    
+    # if at least one facet column/row is specified, add it
+    facets <- paste(input$facet_row, '~', input$facet_col)
+    if (facets != '. ~ .') p <- p + facet_grid(facets)
+    
+    ggplotly(p) %>% 
+      layout(height = input$plotHeight, autosize=TRUE)
+    
+  })
+  
 }
 
-# Run the application 
-shinyApp(ui = ui, server = server)
-
+shinyApp(ui, server)
