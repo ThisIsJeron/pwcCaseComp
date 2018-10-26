@@ -1,13 +1,14 @@
 library(shiny)
 library(plotly)
-
+library(dplyr)
+# library(tidyr)
 #todo radio for big
 #     radio for only 3
 #     selection for big
 
 ui <- fluidPage(          
   
-  headerPanel("Fleetwings Quality of Life Data Visualization"),
+  headerPanel("Fleetwings Quality of Life Shiny App"),
   sidebarPanel(
     radioButtons("only3", h3("Compare Main Selected Cities:"),
                  choices = list("Yes" = 1, "No" = 2), selected = 1),
