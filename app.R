@@ -1,57 +1,41 @@
 library(shiny)
 library(plotly)
-library(ggplot2movies)
 
-minx <- min(movies$rating)
-maxx <- max(movies$rating)
 
 ui <- fluidPage(
   
   headerPanel("Fleetwings Quality of Life Data Visualization"),
   sidebarPanel(
-    sliderInput("bins", "Number of bins:", min = 1, max = 50, value = 10)
+    selectInput("column", "Select an Attribute to View:",
+                c("Population" = "pop",
+                  "People under 5" = "pu5",
+                  "People under 18" = "pu18",
+                  "People over 65" = "p65p",
+                  "Active Labor Force" = "alf",
+                  "Household Income" = "hi",
+                  "Median Home Value" = "mhv",
+                  "Median Gross Rent" = "mgr",
+                  "Number of People Living in Poverty" = "pov",
+                  "Average Transportation Time" = "att",
+                  "College Attainment" = "ca"))
   ),
   mainPanel(
-    plotlyOutput('trendPlot'),
-    plotlyOutput('trendPlot2'),
-    plotlyOutput('trendPlot3')
+    plotlyOutput('trendPlot')
   )
 )
 
 server <- function(input, output) {
   
   output$trendPlot <- renderPlotly({
-    # size of the bins depend on the input 'bins'
-    size <- (maxx - minx) / input$bins
     
-    # a simple histogram of movie ratings
-    p <- plot_ly(movies, x = movies$rating, autobinx = F, type = "histogram",
-                 xbins = list(start = minx, end = maxx, size = size))
-    # style the xaxis
-    layout(p, xaxis = list(title = "Ratings", range = c(minx, maxx), autorange = F,
-                           autotick = F, tick0 = minx, dtick = size))
-  })
-  output$trendPlot2 <- renderPlotly({
-    # size of the bins depend on the input 'bins'
-    size <- (maxx - minx) / input$bins
-    
-    # a simple histogram of movie ratings
-    p <- plot_ly(movies, x = movies$rating, autobinx = F, type = "histogram",
-                 xbins = list(start = minx, end = maxx, size = size))
-    # style the xaxis
-    layout(p, xaxis = list(title = "Ratings", range = c(minx, maxx), autorange = F,
-                           autotick = F, tick0 = minx, dtick = size))
-  })
-  output$trendPlot3 <- renderPlotly({
-    # size of the bins depend on the input 'bins'
-    size <- (maxx - minx) / input$bins
-    
-    # a simple histogram of movie ratings
-    p <- plot_ly(movies, x = movies$rating, autobinx = F, type = "histogram",
-                 xbins = list(start = minx, end = maxx, size = size))
-    # style the xaxis
-    layout(p, xaxis = list(title = "Ratings", range = c(minx, maxx), autorange = F,
-                           autotick = F, tick0 = minx, dtick = size))
+    # p <- plot_ly(MyData, x = MyData$city, autobinx = F, type = "histogram",
+    #              xbins = list(start = minx, end = maxx, size = size))
+    # # style the xaxis
+    # layout(p, xaxis = list(title = "Ratings", range = c(minx, maxx), autorange = F,
+    #                        autotick = F, tick0 = minx, dtick = size))
+    test <- select(MyData, city, input$column)
+    ggplot(data=test, aes(x=city, y = as.vector(t(test[,2])))) +
+      geom_bar(stat="identity") 
   })
 }
 
