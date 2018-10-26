@@ -5,8 +5,9 @@ account: jeron
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 534718
-bundleId: 1663100
+bundleId: 1664873
 url: https://jeron.shinyapps.io/pwcCaseComp/
-when: 1540492600.41488
+when: 1540565225.8452
 asMultiple: FALSE
 asStatic: FALSE
+ignoredFiles: Book1.csv|Book2.csv

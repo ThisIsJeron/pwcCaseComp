@@ -1,11 +1,43 @@
 library(shiny)
 library(plotly)
 
+#todo radio for big
+#     radio for only 3
+#     selection for big
 
-ui <- fluidPage(
+ui <- fluidPage(          
   
   headerPanel("Fleetwings Quality of Life Data Visualization"),
   sidebarPanel(
+    radioButtons("only3", h3("Compare Main Selected Cities:"),
+                 choices = list("Yes" = 1, "No" = 2), selected = 1),
+    radioButtons("big", h3("Compare Major Categories:"),
+                 choices = list("Yes" = 1, "No" = 2), selected = 1),
+    conditionalPanel(
+      condition = "input.big == 1",
+        uiOutput("onlyBig")
+    ),
+    conditionalPanel(
+      condition = "input.big == 2",
+      uiOutput("attributes")
+    )
+  ),
+  mainPanel(
+    plotlyOutput('plot')
+  )
+)
+
+server <- function(input, output) {
+  
+  output$onlyBig <- renderUI({
+    selectInput("bigcol", "Select Major Category to View:",
+                c("Job" = "job",
+                  "Cost of Living" = "col",
+                  "Safety and Wellbeing" = "swb"))
+  })
+
+  output$attributes <- renderUI({
+
     selectInput("column", "Select an Attribute to View:",
                 c("Population" = "pop",
                   "People under 5" = "pu5",
@@ -18,24 +50,34 @@ ui <- fluidPage(
                   "Number of People Living in Poverty" = "pov",
                   "Average Transportation Time" = "att",
                   "College Attainment" = "ca"))
-  ),
-  mainPanel(
-    plotlyOutput('trendPlot')
-  )
-)
-
-server <- function(input, output) {
+  })
   
-  output$trendPlot <- renderPlotly({
-    
-    # p <- plot_ly(MyData, x = MyData$city, autobinx = F, type = "histogram",
-    #              xbins = list(start = minx, end = maxx, size = size))
-    # # style the xaxis
-    # layout(p, xaxis = list(title = "Ratings", range = c(minx, maxx), autorange = F,
-    #                        autotick = F, tick0 = minx, dtick = size))
-    test <- select(MyData, city, input$column)
-    ggplot(data=test, aes(x=city, y = as.vector(t(test[,2])))) +
-      geom_bar(stat="identity") 
+  output$plot <- renderPlotly({
+    # if(input$only3 == 1){
+    #   mydf <- mydfS
+    # }
+    if (input$big == 1){
+      mydf <- select(mydf, city, input$bigcol)
+    }
+    if (input$big == 2){
+      
+      mydf <- select(mydf, city, input$column)
+    }
+
+    # if (input$onlyBig == 2){
+    #   
+    # }
+    # mydf <- select(MyData, city, input$column)
+    if (input$only3 == 1){
+      mydf <- slice(mydf, 1:3)
+      # mydf <-select(mydf, city, input$column)
+    }
+    # mydf <- select(mydf, city, input$column)
+    City <- as.vector(t(mydf[,2]))
+    index <- as.vector(t(mydf[,2]))
+    ggplot(data=mydf, aes(x=reorder(city, City), y = index, fill = factor(city))) +
+      geom_bar(stat="identity") +
+      labs(x = "City")
   })
 }
 
